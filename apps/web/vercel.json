@@ -6,7 +6,7 @@
     },
     {
       "source": "/uploads/(.*)",
-      "destination": "https://RAILWAY_URL/uploads/$1"
+      "destination": "storesfastweb-production.up.railway.app"
     },
     {
       "source": "/(.*)",
