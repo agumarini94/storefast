@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Servir imágenes subidas como archivos estáticos
-app.use('/uploads', express.static(resolve(__dirname, '../../../uploads')));
+app.use('/uploads', express.static(resolve(__dirname, '../uploads')));
 
 // Rutas
 app.use('/api/auth',                    authRoutes);

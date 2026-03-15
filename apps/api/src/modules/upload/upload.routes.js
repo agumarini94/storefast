@@ -7,7 +7,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import { authenticate } from '../../middlewares/auth.js';
 
 const __dirname  = dirname(fileURLToPath(import.meta.url));
-const UPLOADS_DIR = resolve(__dirname, '../../../../../uploads');
+const UPLOADS_DIR = resolve(__dirname, '../../../uploads');
 
 // ── Detectar si Cloudinary está configurado ──────────────────────────
 const useCloudinary = !!(
