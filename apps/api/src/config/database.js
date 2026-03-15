@@ -54,6 +54,9 @@ export async function initDatabase() {
       CREATE INDEX IF NOT EXISTS idx_products_store_id ON products(store_id);
       CREATE INDEX IF NOT EXISTS idx_products_category  ON products(store_id, category);
       CREATE INDEX IF NOT EXISTS idx_stores_slug        ON stores(slug);
+
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS images       JSONB DEFAULT '[]';
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS custom_styles JSONB DEFAULT '{}';
     `);
     console.log('✅ Database initialized');
   } finally {

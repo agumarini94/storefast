@@ -19,6 +19,8 @@ const GRID_CLASS = {
   4: 'grid-cols-2 sm:grid-cols-4',
 };
 
+const TITLE_FONT_SIZES = { sm: '1rem', base: '1.25rem', lg: '1.5rem', xl: '1.875rem', '2xl': '2.25rem' };
+
 export default function CatalogPage() {
   const { slug } = useParams();
   const store    = useTenant();
@@ -33,7 +35,10 @@ export default function CatalogPage() {
   const desktopCols = theme.catalog_columns ?? 2;
   const gridClass   = GRID_CLASS[desktopCols] ?? 'grid-cols-2';
 
-  // Aplicar dark mode y RTL al contenedor raíz del catálogo
+  // Store title customization
+  const titleAlign    = theme.title_align     || 'left';
+  const titleFontSize = TITLE_FONT_SIZES[theme.title_font_size || 'xl'] || '1.875rem';
+
   useEffect(() => {
     const el = document.getElementById('catalog-root');
     if (!el) return;
@@ -96,13 +101,16 @@ export default function CatalogPage() {
       {/* Header */}
       <header className="px-4 py-4 sticky top-0 z-10 shadow-md"
         style={{ backgroundColor: theme.primary_color || '#3B82F6' }}>
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
+        <div className="max-w-5xl mx-auto flex items-center gap-3">
           {theme.logo_url && (
             <img src={theme.logo_url} alt={store?.name}
               className="w-11 h-11 rounded-full object-cover ring-2 ring-white/30 shrink-0" />
           )}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-white leading-tight truncate">{store?.name}</h1>
+          <div className="flex-1 min-w-0" style={{ textAlign: titleAlign }}>
+            <h1 className="font-bold text-white leading-tight truncate"
+              style={{ fontSize: titleFontSize }}>
+              {store?.name}
+            </h1>
             {theme.subtitle
               ? <p className="text-white/75 text-xs mt-0.5 truncate">{theme.subtitle}</p>
               : <p className="text-white/60 text-xs mt-0.5">{products.length} {t(lang, 'items')}</p>
@@ -111,12 +119,12 @@ export default function CatalogPage() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-4 space-y-4">
+      <div className="max-w-5xl mx-auto px-4 py-4">
         <SearchBar value={search} onChange={setSearch} placeholder={t(lang, 'search')} />
 
-        {/* Filtros categoría */}
+        {/* Mobile: horizontal category pills */}
         {categories.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4">
+          <div className="md:hidden flex gap-2 overflow-x-auto pb-1 mt-3 -mx-4 px-4">
             <button onClick={() => setActiveCategory(null)}
               className="px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap shrink-0 transition-colors text-white shadow-sm"
               style={!activeCategory
@@ -138,59 +146,108 @@ export default function CatalogPage() {
           </div>
         )}
 
-        {/* Secciones */}
-        {visibleSections.length > 0 ? (
-          <div className="space-y-6">
-            {visibleSections.map(section => (
-              <div key={section.name}>
-                <div className="flex items-center gap-3 mb-3">
-                  <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                    {section.name}
-                  </h2>
-                  <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
-                  <span className="text-xs text-gray-400 shrink-0">
-                    {section.items.length} {t(lang, 'items')}
-                  </span>
-                </div>
+        {/* Desktop: sidebar + grid  /  Mobile: full width grid */}
+        <div className="mt-4 md:grid md:grid-cols-[220px_1fr] md:gap-6 md:items-start">
 
-                <div className={`grid gap-3 ${gridClass}`}>
-                  {section.items.map(product => (
-                    <ProductCard key={product.id} product={product} columns={desktopCols} />
-                  ))}
-                </div>
+          {/* Sidebar — desktop only */}
+          {categories.length > 1 && (
+            <aside className="hidden md:block sticky top-24">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">
+                  Categorías
+                </p>
+                <ul className="space-y-0.5">
+                  <li>
+                    <button
+                      onClick={() => setActiveCategory(null)}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        !activeCategory
+                          ? 'text-white'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                      }`}
+                      style={!activeCategory ? { backgroundColor: theme.primary_color || '#3B82F6' } : {}}>
+                      {t(lang, 'all')}
+                      <span className="float-right text-xs opacity-60">{products.length}</span>
+                    </button>
+                  </li>
+                  {categories.map(cat => {
+                    const count = sections.find(s => s.name === cat)?.items.length ?? 0;
+                    const isActive = activeCategory === cat;
+                    return (
+                      <li key={cat}>
+                        <button
+                          onClick={() => setActiveCategory(isActive ? null : cat)}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            isActive
+                              ? 'text-white'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          }`}
+                          style={isActive ? { backgroundColor: theme.primary_color || '#3B82F6' } : {}}>
+                          {cat}
+                          <span className="float-right text-xs opacity-60">{count}</span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16 text-gray-400">
-            <div className="text-4xl mb-2">📦</div>
-            <p>{search ? t(lang, 'noMatch') : t(lang, 'noProducts')}</p>
-          </div>
-        )}
+            </aside>
+          )}
 
-        {/* Botones de contacto */}
-        <div className="space-y-2 pt-2 pb-8">
-          {waLink && (
-            <a href={waLink} target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full bg-green-500 text-white py-3 rounded-xl font-semibold text-sm">
-              💬 {t(lang, 'talkToStore')}
-            </a>
-          )}
-          {contact.maps_url && (
-            <a href={contact.maps_url} target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-sm">
-              📍 {t(lang, 'howToGet')}
-            </a>
-          )}
-          {contact.instagram && (
-            <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`}
-              target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 w-full border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-sm">
-              📸 {contact.instagram}
-            </a>
-          )}
+          {/* Product sections */}
+          <div className="space-y-6">
+            {visibleSections.length > 0 ? (
+              visibleSections.map(section => (
+                <div key={section.name}>
+                  <div className="flex items-center gap-3 mb-3">
+                    <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 whitespace-nowrap">
+                      {section.name}
+                    </h2>
+                    <div className="flex-1 h-px bg-gray-200 dark:bg-gray-700" />
+                    <span className="text-xs text-gray-400 shrink-0">
+                      {section.items.length} {t(lang, 'items')}
+                    </span>
+                  </div>
+
+                  <div className={`grid gap-3 ${gridClass}`}>
+                    {section.items.map(product => (
+                      <ProductCard key={product.id} product={product} columns={desktopCols} />
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-16 text-gray-400">
+                <div className="text-4xl mb-2">📦</div>
+                <p>{search ? t(lang, 'noMatch') : t(lang, 'noProducts')}</p>
+              </div>
+            )}
+
+            {/* Botones de contacto */}
+            <div className="space-y-2 pt-2 pb-8">
+              {waLink && (
+                <a href={waLink} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full bg-green-500 text-white py-3 rounded-xl font-semibold text-sm">
+                  💬 {t(lang, 'talkToStore')}
+                </a>
+              )}
+              {contact.maps_url && (
+                <a href={contact.maps_url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-sm">
+                  📍 {t(lang, 'howToGet')}
+                </a>
+              )}
+              {contact.instagram && (
+                <a href={`https://instagram.com/${contact.instagram.replace('@', '')}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-sm">
+                  📸 {contact.instagram}
+                </a>
+              )}
+            </div>
+          </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

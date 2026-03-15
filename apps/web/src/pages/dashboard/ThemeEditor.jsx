@@ -53,6 +53,8 @@ const DEFAULT_THEME = {
   title_size:       'base',
   title_text_color: '',
   price_bg_color:   '',
+  title_align:      'left',
+  title_font_size:  'xl',
 };
 
 const TABS = [
@@ -218,6 +220,37 @@ export default function ThemeEditor() {
             </div>
           </div>
 
+          {/* Alineación y tamaño del título */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Alineación del nombre</label>
+            <div className="flex gap-2">
+              {[['left', '⬅ Izquierda'], ['center', '↔ Centro'], ['right', 'Derecha ➡']].map(([val, lbl]) => (
+                <button key={val} type="button"
+                  onClick={() => set('title_align', val)}
+                  className={`flex-1 py-2 text-xs rounded-lg border-2 transition-colors ${
+                    theme.title_align === val ? 'border-primary bg-primary text-white font-bold' : 'border-gray-200 text-gray-600'
+                  }`}>
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Tamaño del nombre de la tienda</label>
+            <div className="flex gap-1.5">
+              {[['sm','S'],['base','M'],['lg','L'],['xl','XL'],['2xl','2XL']].map(([val, lbl]) => (
+                <button key={val} type="button"
+                  onClick={() => set('title_font_size', val)}
+                  className={`flex-1 py-2 rounded-lg border-2 font-bold transition-colors text-xs ${
+                    theme.title_font_size === val ? 'border-primary bg-primary text-white' : 'border-gray-200 text-gray-600'
+                  }`}>
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Preview header */}
           <div className="rounded-xl overflow-hidden border border-gray-100">
             {theme.banner_url && (
@@ -232,8 +265,10 @@ export default function ThemeEditor() {
                 <img src={theme.logo_url} alt="logo"
                   className="w-10 h-10 rounded-full object-cover ring-2 ring-white/30 shrink-0" />
               )}
-              <div>
-                <p className="text-white font-bold">Mi Tienda</p>
+              <div className="flex-1" style={{ textAlign: theme.title_align || 'left' }}>
+                <p className="text-white font-bold" style={{
+                  fontSize: { sm:'1rem', base:'1.25rem', lg:'1.5rem', xl:'1.875rem', '2xl':'2.25rem' }[theme.title_font_size || 'xl']
+                }}>Mi Tienda</p>
                 {theme.subtitle && <p className="text-white/75 text-xs">{theme.subtitle}</p>}
               </div>
             </div>

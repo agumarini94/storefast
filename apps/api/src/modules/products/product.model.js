@@ -21,12 +21,12 @@ export async function findByStore(storeId, { category, search } = {}) {
 }
 
 export async function create(storeId, data) {
-  const { name, description, price, image_url, category, in_stock, metadata } = data;
+  const { name, description, price, image_url, images, category, in_stock, metadata, custom_styles } = data;
   const { rows } = await pool.query(
-    `INSERT INTO products (store_id, name, description, price, image_url, category, in_stock, metadata)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+    `INSERT INTO products (store_id, name, description, price, image_url, images, category, in_stock, metadata, custom_styles)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
      RETURNING *`,
-    [storeId, name, description, price, image_url, category, in_stock ?? true, metadata ?? {}]
+    [storeId, name, description, price, image_url, JSON.stringify(images ?? []), category, in_stock ?? true, JSON.stringify(metadata ?? {}), JSON.stringify(custom_styles ?? {})]
   );
   return rows[0];
 }
@@ -36,7 +36,7 @@ export async function update(productId, storeId, data) {
   const params = [];
 
   Object.entries(data).forEach(([key, value]) => {
-    if (['name','description','price','image_url','category','in_stock','sort_order','metadata'].includes(key)) {
+    if (['name','description','price','image_url','images','category','in_stock','sort_order','metadata','custom_styles'].includes(key)) {
       params.push(value);
       fields.push(`${key} = $${params.length}`);
     }
