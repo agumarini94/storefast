@@ -22,7 +22,7 @@ export default function StoreSelectorPage() {
   const createMutation = useMutation({
     mutationFn: () => authApi().post('/stores', { name, slug }),
     onSuccess: ({ data: newStore }) => {
-      queryClient.invalidateQueries(['my-stores']);
+      queryClient.invalidateQueries({ queryKey: ['my-stores'] });
       setActiveStore(newStore);
       navigate('/dashboard/products');
     },

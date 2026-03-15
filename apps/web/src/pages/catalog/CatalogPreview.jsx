@@ -50,7 +50,7 @@ export default function CatalogPreview({ theme = {}, store = {}, products = [] }
   return (
     <div style={{
       backgroundColor: isDark ? '#111827' : (theme.secondary_color || '#F9FAFB'),
-      fontFamily: theme.font ? `'${theme.font}', sans-serif` : undefined,
+      fontFamily: theme.font ? `'${theme.font}', system-ui, sans-serif` : undefined,
       minHeight: '100%',
     }}>
       {/* Banner */}

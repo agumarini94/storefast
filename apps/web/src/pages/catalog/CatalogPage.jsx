@@ -109,33 +109,70 @@ export default function CatalogPage() {
       className="min-h-screen font-main dark:bg-gray-900 transition-colors duration-300"
       style={{ backgroundColor: isDark ? undefined : (theme.secondary_color || '#F9FAFB') }}>
 
-      {/* Banner — separado del header */}
-      {theme.banner_url && (
-        <div className="relative w-full h-40 overflow-hidden">
-          <img src={theme.banner_url} alt="banner" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-black/50" />
-        </div>
-      )}
-
-      {/* Header — color y texto independientes del banner */}
-      <header className="px-4 py-4 sticky top-0 z-10 shadow-md" style={{ backgroundColor: headerBg }}>
-        <div className="max-w-5xl mx-auto flex items-center gap-3">
-          {theme.logo_type !== 'text' && theme.logo_url && (
-            <img src={theme.logo_url} alt={store?.name}
-              className="w-11 h-11 rounded-full object-cover ring-2 ring-white/30 shrink-0" />
-          )}
-          <div className="flex-1 min-w-0" style={{ textAlign: titleAlign }}>
-            <h1 className="font-bold leading-tight truncate"
-              style={{ fontSize: titleFontSize, color: headerTextColor, ...getWordArtStyle(theme) }}>
-              {store?.name}
-            </h1>
-            {theme.subtitle
-              ? <p className="text-xs mt-0.5 truncate" style={{ color: headerTextColor + 'bb' }}>{theme.subtitle}</p>
-              : <p className="text-xs mt-0.5" style={{ color: headerTextColor + '99' }}>{products.length} {t(lang, 'items')}</p>
-            }
+      {/* ── Con banner: título superpuesto sobre la imagen ── */}
+      {theme.banner_url ? (
+        <>
+          <div className="relative w-full overflow-hidden" style={{ height: 200 }}>
+            <img src={theme.banner_url} alt="banner" className="w-full h-full object-cover" />
+            {/* Gradient para legibilidad del título */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70" />
+            {/* Título superpuesto en la parte inferior del banner */}
+            <div className="absolute bottom-0 inset-x-0 px-4 pb-4">
+              <div className="max-w-5xl mx-auto flex items-end gap-3">
+                {theme.logo_type !== 'text' && theme.logo_url && (
+                  <img src={theme.logo_url} alt={store?.name}
+                    className="w-11 h-11 rounded-full object-cover ring-2 ring-white/50 shrink-0" />
+                )}
+                <div className="flex-1 min-w-0" style={{ textAlign: titleAlign }}>
+                  <h1 className="font-bold leading-tight truncate drop-shadow-lg"
+                    style={{ fontSize: titleFontSize, color: '#ffffff', ...getWordArtStyle(theme) }}>
+                    {store?.name}
+                  </h1>
+                  {theme.subtitle
+                    ? <p className="text-white/80 text-xs mt-0.5 truncate drop-shadow">{theme.subtitle}</p>
+                    : <p className="text-white/60 text-xs mt-0.5">{products.length} {t(lang, 'items')}</p>
+                  }
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </header>
+          {/* Thin sticky bar — solo visible al hacer scroll */}
+          <div className="sticky top-0 z-10 px-4 py-2 shadow-md"
+            style={{ backgroundColor: headerBg }}>
+            <div className="max-w-5xl mx-auto flex items-center gap-2">
+              {theme.logo_type !== 'text' && theme.logo_url && (
+                <img src={theme.logo_url} alt={store?.name} className="w-7 h-7 rounded-full object-cover shrink-0" />
+              )}
+              <span className="font-bold text-sm truncate" style={{ color: headerTextColor, fontFamily: theme.wordart_font || undefined }}>
+                {store?.name}
+              </span>
+              <span className="ml-auto text-xs" style={{ color: headerTextColor + '80' }}>
+                {products.length} {t(lang, 'items')}
+              </span>
+            </div>
+          </div>
+        </>
+      ) : (
+        /* ── Sin banner: header sólido sticky ── */
+        <header className="px-4 py-4 sticky top-0 z-10 shadow-md" style={{ backgroundColor: headerBg }}>
+          <div className="max-w-5xl mx-auto flex items-center gap-3">
+            {theme.logo_type !== 'text' && theme.logo_url && (
+              <img src={theme.logo_url} alt={store?.name}
+                className="w-11 h-11 rounded-full object-cover ring-2 ring-white/30 shrink-0" />
+            )}
+            <div className="flex-1 min-w-0" style={{ textAlign: titleAlign }}>
+              <h1 className="font-bold leading-tight truncate"
+                style={{ fontSize: titleFontSize, color: headerTextColor, ...getWordArtStyle(theme) }}>
+                {store?.name}
+              </h1>
+              {theme.subtitle
+                ? <p className="text-xs mt-0.5 truncate" style={{ color: headerTextColor + 'bb' }}>{theme.subtitle}</p>
+                : <p className="text-xs mt-0.5" style={{ color: headerTextColor + '99' }}>{products.length} {t(lang, 'items')}</p>
+              }
+            </div>
+          </div>
+        </header>
+      )}
 
       <div className="max-w-5xl mx-auto px-4 py-4">
 

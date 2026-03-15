@@ -29,7 +29,17 @@ const defaultStyles = {
   is_sale:        false,
   sale_price:     '',
   sale_color:     '#ef4444',
+  badge:          '',      // '' | 'SALE' | 'NUEVO' | 'ÚLTIMO' | 'OFERTA' | custom
+  button_color:   '',      // '' = use primary_color
 };
+
+const BADGES = [
+  { value: '',       label: 'Sin badge' },
+  { value: 'SALE',   label: '🏷 SALE'   },
+  { value: 'NUEVO',  label: '✨ NUEVO'  },
+  { value: 'ÚLTIMO', label: '⚡ ÚLTIMO' },
+  { value: 'OFERTA', label: '🔥 OFERTA' },
+];
 
 const emptyForm = {
   name: '', price: '', category: '', description: '',
@@ -72,7 +82,7 @@ export default function ProductsManager() {
         : authApi().post(`/stores/${slug}/products`, payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['dashboard-products', slug]);
+      queryClient.invalidateQueries({ queryKey: ['dashboard-products', slug] });
       setForm(emptyForm);
       setEditing(null);
       setOpen(false);
@@ -83,12 +93,12 @@ export default function ProductsManager() {
   const toggleStock = useMutation({
     mutationFn: ({ id, in_stock }) =>
       authApi().patch(`/stores/${slug}/products/${id}`, { in_stock: !in_stock }),
-    onSuccess: () => queryClient.invalidateQueries(['dashboard-products', slug]),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['dashboard-products', slug] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id) => authApi().delete(`/stores/${slug}/products/${id}`),
-    onSuccess: () => queryClient.invalidateQueries(['dashboard-products', slug]),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['dashboard-products', slug] }),
   });
 
   const openEdit = (product) => {
@@ -348,6 +358,39 @@ export default function ProductsManager() {
                           {a.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+
+                  {/* Badge */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-2">Badge sobre la imagen</label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {BADGES.map(b => (
+                        <button key={b.value} type="button"
+                          onClick={() => setCs('badge', b.value)}
+                          className={`py-2 text-xs rounded-lg border-2 transition-colors ${
+                            cs.badge === b.value ? 'border-primary bg-primary/10 text-primary font-bold' : 'border-gray-200 text-gray-600'
+                          }`}>
+                          {b.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Button color */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-2">
+                      Color del botón <span className="text-gray-400">(vacío = color principal)</span>
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input type="color" value={cs.button_color || '#3B82F6'}
+                        onChange={e => setCs('button_color', e.target.value)}
+                        className="w-10 h-10 rounded-lg cursor-pointer border-0 p-0" />
+                      <span className="text-xs text-gray-400 font-mono">{cs.button_color || 'color principal'}</span>
+                      {cs.button_color && (
+                        <button type="button" onClick={() => setCs('button_color', '')}
+                          className="text-xs text-gray-400 hover:text-red-400">✕ Resetear</button>
+                      )}
                     </div>
                   </div>
 

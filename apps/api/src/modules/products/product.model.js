@@ -35,9 +35,15 @@ export async function update(productId, storeId, data) {
   const fields = [];
   const params = [];
 
+  const JSONB_KEYS = new Set(['images', 'metadata', 'custom_styles']);
+
   Object.entries(data).forEach(([key, value]) => {
     if (['name','description','price','image_url','images','category','in_stock','sort_order','metadata','custom_styles'].includes(key)) {
-      params.push(value);
+      // Explicit stringify for JSONB fields — pg does not auto-serialize in all versions
+      const serialized = JSONB_KEYS.has(key) && value !== null && typeof value !== 'string'
+        ? JSON.stringify(value)
+        : value;
+      params.push(serialized);
       fields.push(`${key} = $${params.length}`);
     }
   });

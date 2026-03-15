@@ -25,7 +25,8 @@ export function TenantProvider({ children }) {
     const root = document.documentElement;
     if (store.theme.primary_color)   root.style.setProperty('--color-primary',   store.theme.primary_color);
     if (store.theme.secondary_color) root.style.setProperty('--color-secondary', store.theme.secondary_color);
-    if (store.theme.font)            root.style.setProperty('--font-main',        store.theme.font);
+    // Wrap font name in quotes so CSS font-family handles multi-word names (e.g. "Playfair Display")
+    if (store.theme.font)            root.style.setProperty('--font-main',        `'${store.theme.font}'`);
   }, [store?.theme]);
 
   if (isLoading) {

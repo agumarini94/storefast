@@ -4,8 +4,15 @@ import { useDashboard } from '../../context/DashboardContext';
 import ImageUpload from '../../components/ImageUpload';
 import CatalogPreview from '../catalog/CatalogPreview';
 
-const FONTS = ['Inter', 'Roboto', 'Poppins', 'Merriweather', 'Playfair Display'];
-const WORDART_FONTS = ['', 'Playfair Display', 'Merriweather', 'Poppins', 'Roboto Slab', 'Lobster', 'Oswald'];
+// Professional / clean fonts
+const FONTS_PRO = ['Inter', 'Montserrat', 'Poppins', 'Raleway', 'Lato', 'Roboto'];
+// Display / editorial
+const FONTS_DISPLAY = ['Playfair Display', 'Merriweather', 'Oswald', 'Roboto Slab'];
+// Fun / display
+const FONTS_FUN = ['Bangers', 'Luckiest Guy', 'Pacifico', 'Fredoka One', 'Righteous'];
+const FONTS = [...FONTS_PRO, ...FONTS_DISPLAY, ...FONTS_FUN];
+
+const WORDART_FONTS = ['', ...FONTS_DISPLAY, ...FONTS_FUN];
 
 const COLUMNS_OPTIONS = [
   { value: 1, label: '1 col',  desc: 'Tarjeta grande' },
@@ -111,7 +118,7 @@ export default function ThemeEditor() {
     const root = document.documentElement;
     if (key === 'primary_color')   root.style.setProperty('--color-primary',   value);
     if (key === 'secondary_color') root.style.setProperty('--color-secondary', value);
-    if (key === 'font')            root.style.setProperty('--font-main',        value);
+    if (key === 'font')            root.style.setProperty('--font-main',        `'${value}'`);
   };
 
   const liveStore = { ...activeStore, theme, contact: activeStore?.contact || {} };
@@ -159,16 +166,25 @@ export default function ThemeEditor() {
               ))}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Tipografía</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {FONTS.map(font => (
-                    <button key={font} onClick={() => set('font', font)}
-                      className={`py-2.5 px-3 rounded-lg text-sm border transition-colors ${
-                        theme.font === font ? 'border-primary bg-primary text-white' : 'border-gray-200 text-gray-700'
-                      }`}
-                      style={{ fontFamily: font }}>{font}</button>
-                  ))}
-                </div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Tipografía del catálogo</label>
+                {[
+                  { label: 'Profesionales', fonts: FONTS_PRO },
+                  { label: 'Display / Editorial', fonts: FONTS_DISPLAY },
+                  { label: 'Divertidas', fonts: FONTS_FUN },
+                ].map(group => (
+                  <div key={group.label} className="mb-3">
+                    <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{group.label}</p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {group.fonts.map(font => (
+                        <button key={font} onClick={() => set('font', font)}
+                          className={`py-2.5 px-3 rounded-lg text-sm border transition-colors ${
+                            theme.font === font ? 'border-primary bg-primary text-white' : 'border-gray-200 text-gray-700'
+                          }`}
+                          style={{ fontFamily: `'${font}', sans-serif` }}>{font}</button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}

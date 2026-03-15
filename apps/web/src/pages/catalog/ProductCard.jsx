@@ -83,11 +83,14 @@ export default function ProductCard({ product, columns = 2 }) {
           <div className="w-full h-full flex items-center justify-center text-gray-200 text-4xl">🛍️</div>
         )}
 
-        {/* Sale badge */}
-        {cs.is_sale && (
-          <div className="absolute top-2 left-2 z-20 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse"
-            style={{ backgroundColor: saleColor }}>
-            SALE
+        {/* Badge sobre imagen (cs.badge tiene prioridad sobre is_sale) */}
+        {(cs.badge || cs.is_sale) && (
+          <div className="absolute top-2 left-2 z-20 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md"
+            style={{
+              backgroundColor: cs.badge ? (cs.is_sale ? saleColor : '#1f2937') : saleColor,
+              animation: cs.is_sale ? 'pulse 2s infinite' : 'none',
+            }}>
+            {cs.badge || 'SALE'}
           </div>
         )}
 
@@ -182,10 +185,10 @@ export default function ProductCard({ product, columns = 2 }) {
 
           {product.in_stock ? (
             <a href={waLink} target="_blank" rel="noopener noreferrer"
-              className={`shrink-0 font-semibold rounded-lg text-white transition-opacity active:opacity-75 ${
+              className={`shrink-0 font-semibold rounded-lg text-white transition-all active:opacity-75 hover:opacity-90 ${
                 compact ? 'text-xs px-2 py-1' : 'text-xs px-3 py-2'
               }`}
-              style={{ backgroundColor: theme.primary_color || '#3B82F6' }}>
+              style={{ backgroundColor: cs.button_color || theme.primary_color || '#3B82F6' }}>
               {t(lang, 'consult')}
             </a>
           ) : (
