@@ -10,13 +10,12 @@ import {
 
 const router = Router({ mergeParams: true });
 
-// Pública: GET /stores/:slug/products
-router.get('/', resolveTenant, getProducts);
+// Pública
+router.get('/',                                              resolveTenant, getProducts);
 
-// Protegidas: dashboard
-router.use(authenticate, resolveTenant);
-router.post('/',              createProduct);
-router.patch('/:productId',   updateProduct);
-router.delete('/:productId',  deleteProduct);
+// Protegidas — middleware inline para evitar que afecte al GET público
+router.post('/',            authenticate, resolveTenant, createProduct);
+router.patch('/:productId', authenticate, resolveTenant, updateProduct);
+router.delete('/:productId',authenticate, resolveTenant, deleteProduct);
 
 export default router;

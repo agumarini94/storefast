@@ -10,14 +10,13 @@ import {
 
 const router = Router();
 
-// Rutas públicas
+// Pública
 router.get('/public/:slug', getPublicStore);
 
-// Rutas protegidas (dashboard del owner)
-router.use(authenticate);
-router.get('/', getMyStores);
-router.post('/', createStore);
-router.patch('/:storeId/theme', updateTheme);
-router.patch('/:storeId/contact', updateContact);
+// Protegidas — middleware inline
+router.get('/',                        authenticate, getMyStores);
+router.post('/',                       authenticate, createStore);
+router.patch('/:storeId/theme',        authenticate, updateTheme);
+router.patch('/:storeId/contact',      authenticate, updateContact);
 
 export default router;
