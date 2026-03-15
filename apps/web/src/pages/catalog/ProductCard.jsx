@@ -5,7 +5,6 @@ import { t } from '../../i18n/translations';
 
 const TITLE_FONT_SIZE = { xs: '10px', sm: '11px', base: '13px', lg: '15px', xl: '17px' };
 
-// Static map → Tailwind won't purge these classes
 const ANIMATION_CLASSES = {
   none:   '',
   scale:  'hover:scale-105 transition-transform duration-300',
@@ -18,16 +17,14 @@ const TITLE_ALIGN = { left: 'text-left', center: 'text-center', right: 'text-rig
 
 export default function ProductCard({ product, columns = 2 }) {
   const store   = useTenant();
-  const [imgIdx,    setImgIdx]    = useState(0);
-  const [expanded,  setExpanded]  = useState(false);
+  const [imgIdx,   setImgIdx]   = useState(0);
+  const [expanded, setExpanded] = useState(false);
 
   const theme   = store?.theme   || {};
   const lang    = theme.language || 'es';
   const compact = columns >= 3;
+  const cs      = product.custom_styles || {};
 
-  const cs = product.custom_styles || {};
-
-  // Build images array: custom images array first, fallback to image_url
   const images = useMemo(() => {
     const arr = Array.isArray(product.images) && product.images.length > 0
       ? product.images.filter(Boolean)
@@ -42,12 +39,11 @@ export default function ProductCard({ product, columns = 2 }) {
     phone:       store?.contact?.whatsapp,
     storeName:   store?.name,
     productName: product.name,
-    price:       product.price,
+    price:       cs.is_sale && cs.sale_price ? cs.sale_price : product.price,
   });
 
-  // --- Styles from custom_styles ---
-  const animClass = ANIMATION_CLASSES[cs.animation || 'none'];
-  const titleAlignClass = TITLE_ALIGN[cs.title_position || 'left'];
+  const animClass     = ANIMATION_CLASSES[cs.animation || 'none'];
+  const titleAlignCls = TITLE_ALIGN[cs.title_position || 'left'];
 
   const titleStyle = {
     fontSize:   TITLE_FONT_SIZE[cs.font_size || theme.title_size || 'base'],
@@ -57,46 +53,45 @@ export default function ProductCard({ product, columns = 2 }) {
   };
 
   const priceStyle = theme.price_bg_color
-    ? {
-        backgroundColor: theme.price_bg_color,
-        color:           '#000',
-        padding:         '2px 8px',
-        borderRadius:    '6px',
-        boxShadow:       `0 0 10px ${theme.price_bg_color}`,
-        fontWeight:      800,
-      }
+    ? { backgroundColor: theme.price_bg_color, color: '#000', padding: '2px 8px', borderRadius: '6px', boxShadow: `0 0 10px ${theme.price_bg_color}`, fontWeight: 800 }
     : { color: '#f97316', fontWeight: 800 };
 
-  // Card body background (custom per product)
   const bodyStyle = {};
-  if (cs.bg_type === 'color' && cs.bg_value) {
-    bodyStyle.backgroundColor = cs.bg_value;
-  } else if (cs.bg_type === 'image' && cs.bg_value) {
+  if (cs.bg_type === 'color' && cs.bg_value) bodyStyle.backgroundColor = cs.bg_value;
+  else if (cs.bg_type === 'image' && cs.bg_value) {
     bodyStyle.backgroundImage    = `url(${cs.bg_value})`;
     bodyStyle.backgroundSize     = 'cover';
     bodyStyle.backgroundPosition = 'center';
   }
-  const hasCustomBg = cs.bg_type === 'image' && cs.bg_value;
+  const hasBgImage = cs.bg_type === 'image' && cs.bg_value;
+
+  // Sale border
+  const saleColor   = cs.sale_color || '#ef4444';
+  const cardBorder  = cs.is_sale ? `2px solid ${saleColor}` : undefined;
 
   return (
-    <div className={`bg-white rounded-xl overflow-hidden flex flex-col group border border-gray-100 dark:bg-gray-800 dark:border-gray-700 ${animClass}`}>
+    <div
+      className={`bg-white rounded-xl overflow-hidden flex flex-col group border border-gray-100 dark:bg-gray-800 dark:border-gray-700 ${animClass}`}
+      style={cardBorder ? { border: cardBorder } : {}}>
 
       {/* ── Imagen / Carrusel ── */}
       <div className="relative w-full overflow-hidden bg-gray-50 dark:bg-gray-700"
         style={{ aspectRatio: '1 / 1' }}>
         {images.length > 0 ? (
-          <img
-            src={images[imgIdx]}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
+          <img src={images[imgIdx]} alt={product.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-200 text-4xl">
-            🛍️
+          <div className="w-full h-full flex items-center justify-center text-gray-200 text-4xl">🛍️</div>
+        )}
+
+        {/* Sale badge */}
+        {cs.is_sale && (
+          <div className="absolute top-2 left-2 z-20 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse"
+            style={{ backgroundColor: saleColor }}>
+            SALE
           </div>
         )}
 
-        {/* Flechas del carrusel */}
+        {/* Carousel controls */}
         {images.length > 1 && (
           <>
             <button onClick={prevImg}
@@ -107,7 +102,6 @@ export default function ProductCard({ product, columns = 2 }) {
               className="absolute right-1 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-black/40 text-white text-xs flex items-center justify-center z-10">
               ›
             </button>
-            {/* Dots */}
             <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 z-10">
               {images.map((_, i) => (
                 <button key={i} onClick={(e) => { e.stopPropagation(); setImgIdx(i); }}
@@ -129,25 +123,29 @@ export default function ProductCard({ product, columns = 2 }) {
 
       {/* ── Contenido ── */}
       <div
-        className={`flex flex-col flex-1 ${compact ? 'p-2 gap-1' : 'p-3 gap-1.5'} ${hasCustomBg ? 'bg-white/85 backdrop-blur-sm' : ''}`}
-        style={!hasCustomBg ? bodyStyle : {}}
-      >
-        {/* Fondo de imagen: wrapper con overlay */}
-        {hasCustomBg && (
-          <div className="absolute inset-0 pointer-events-none" style={bodyStyle} />
-        )}
+        className={`flex flex-col flex-1 ${compact ? 'p-2 gap-1' : 'p-3 gap-1.5'} ${hasBgImage ? 'bg-white/85 backdrop-blur-sm' : ''}`}
+        style={!hasBgImage ? bodyStyle : {}}>
 
         {product.category && (
-          <span className="text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium"
-            style={{ fontSize: '9px' }}>
+          <span className="text-gray-400 dark:text-gray-500 uppercase tracking-wider font-medium" style={{ fontSize: '9px' }}>
             {product.category}
           </span>
         )}
 
-        <h3 className={`font-bold text-gray-900 dark:text-gray-100 leading-snug line-clamp-2 ${titleAlignClass}`}
+        <h3 className={`font-bold text-gray-900 dark:text-gray-100 leading-snug line-clamp-2 ${titleAlignCls}`}
           style={titleStyle}>
           {product.name}
         </h3>
+
+        {/* Star rating */}
+        {cs.rating > 0 && (
+          <div className="flex gap-0.5">
+            {[1, 2, 3, 4, 5].map(i => (
+              <span key={i} className={compact ? 'text-xs' : 'text-sm'}
+                style={{ color: i <= cs.rating ? '#fbbf24' : '#e5e7eb' }}>★</span>
+            ))}
+          </div>
+        )}
 
         {!compact && product.description && (
           <div>
@@ -165,9 +163,22 @@ export default function ProductCard({ product, columns = 2 }) {
         )}
 
         <div className={`mt-auto flex items-center justify-between gap-1 ${compact ? 'pt-1' : 'pt-2'}`}>
-          <span className={compact ? 'text-sm' : 'text-xl'} style={priceStyle}>
-            ₪{Number(product.price).toLocaleString('he-IL')}
-          </span>
+          <div>
+            {cs.is_sale && cs.sale_price ? (
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-400 line-through">
+                  ₪{Number(product.price).toLocaleString('he-IL')}
+                </span>
+                <span className={compact ? 'text-sm' : 'text-xl'} style={priceStyle}>
+                  ₪{Number(cs.sale_price).toLocaleString('he-IL')}
+                </span>
+              </div>
+            ) : (
+              <span className={compact ? 'text-sm' : 'text-xl'} style={priceStyle}>
+                ₪{Number(product.price).toLocaleString('he-IL')}
+              </span>
+            )}
+          </div>
 
           {product.in_stock ? (
             <a href={waLink} target="_blank" rel="noopener noreferrer"

@@ -19,12 +19,16 @@ const TITLE_SIZES = [
 ];
 
 const defaultStyles = {
-  font_family:     '',
-  font_size:       'base',
-  title_position:  'left',
-  bg_type:         'none',
-  bg_value:        '',
-  animation:       'none',
+  font_family:    '',
+  font_size:      'base',
+  title_position: 'left',
+  bg_type:        'none',
+  bg_value:       '',
+  animation:      'none',
+  rating:         0,
+  is_sale:        false,
+  sale_price:     '',
+  sale_color:     '#ef4444',
 };
 
 const emptyForm = {
@@ -345,6 +349,53 @@ export default function ProductsManager() {
                         </button>
                       ))}
                     </div>
+                  </div>
+
+                  {/* Rating */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-2">Calificación (estrellas)</label>
+                    <div className="flex items-center gap-1">
+                      <button type="button" onClick={() => setCs('rating', 0)}
+                        className={`text-xs px-2 py-1 rounded-lg border-2 transition-colors ${cs.rating === 0 ? 'border-primary text-primary bg-primary/10' : 'border-gray-200 text-gray-500'}`}>
+                        Ninguna
+                      </button>
+                      {[1,2,3,4,5].map(n => (
+                        <button key={n} type="button" onClick={() => setCs('rating', n)}
+                          className="text-2xl transition-transform hover:scale-110"
+                          style={{ color: n <= cs.rating ? '#fbbf24' : '#e5e7eb' }}>
+                          ★
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sale */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <div onClick={() => setCs('is_sale', !cs.is_sale)}
+                        className={`w-11 h-6 rounded-full transition-colors relative ${cs.is_sale ? 'bg-red-500' : 'bg-gray-300'}`}>
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${cs.is_sale ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </div>
+                      <span className="text-sm text-gray-700 font-medium">🏷 Producto en oferta</span>
+                    </label>
+
+                    {cs.is_sale && (
+                      <div className="space-y-2 pl-2">
+                        <input type="number" placeholder="Precio de oferta (₪)"
+                          value={cs.sale_price || ''}
+                          onChange={e => setCs('sale_price', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 mb-1">Color del badge Sale</label>
+                          <div className="flex items-center gap-3">
+                            <input type="color" value={cs.sale_color || '#ef4444'}
+                              onChange={e => setCs('sale_color', e.target.value)}
+                              className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0" />
+                            <span className="text-xs font-mono text-gray-400">{cs.sale_color || '#ef4444'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
