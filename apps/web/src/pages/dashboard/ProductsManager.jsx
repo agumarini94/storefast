@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDashboard } from '../../context/DashboardContext';
 import ImageUpload from '../../components/ImageUpload';
+import SmartCategorySelect from '../../components/SmartCategorySelect';
 
 const emptyForm = { name: '', price: '', category: '', description: '', image_url: '', in_stock: true };
 
@@ -136,7 +137,6 @@ export default function ProductsManager() {
             {[
               { key: 'name',        label: 'Nombre',      type: 'text' },
               { key: 'price',       label: 'Precio',      type: 'number' },
-              { key: 'category',    label: 'Categoría',   type: 'text' },
               { key: 'description', label: 'Descripción', type: 'text' },
             ].map(({ key, label, type }) => (
               <input
@@ -148,6 +148,12 @@ export default function ProductsManager() {
                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               />
             ))}
+
+            <SmartCategorySelect
+              value={form.category}
+              onChange={val => setForm(f => ({ ...f, category: val }))}
+              products={products}
+            />
 
             {/* Toggle stock */}
             <label className="flex items-center gap-3 cursor-pointer">

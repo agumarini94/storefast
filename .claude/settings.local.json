@@ -12,7 +12,8 @@
       "Bash(git add:*)",
       "Bash(sleep 60 && curl -s \"https://storesfastweb-production.up.railway.app/api/stores/test/products\")",
       "Bash(curl -s \"https://storesfastweb-production.up.railway.app/api/stores/test/products\")",
-      "Bash(cd /Users/agustin/Desktop/Projects/StoresFast/apps/web && npx vite build 2>&1 | tail -6)"
+      "Bash(cd /Users/agustin/Desktop/Projects/StoresFast/apps/web && npx vite build 2>&1 | tail -6)",
+      "Bash(cd /Users/agustin/Desktop/Projects/StoresFast/apps/web && npx vite build 2>&1)"
     ]
   }
 }
