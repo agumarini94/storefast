@@ -2,7 +2,7 @@ import { pool } from '../../config/database.js';
 
 export async function findBySlug(slug) {
   const { rows } = await pool.query(
-    'SELECT * FROM stores WHERE slug = $1 AND is_active = true',
+    'SELECT * FROM stores WHERE LOWER(slug) = LOWER($1) AND is_active = true',
     [slug]
   );
   return rows[0];

@@ -17,7 +17,15 @@ export default function CatalogPage() {
   const [search, setSearch]           = useState('');
   const [activeCategory, setActiveCategory] = useState(null);
 
-  const columns = store?.theme?.catalog_columns ?? 2;
+  const desktopCols = store?.theme?.catalog_columns ?? 2;
+
+  // Tailwind necesita clases completas y estáticas — no interpoladas
+  const gridClass = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-2',
+    3: 'grid-cols-2 sm:grid-cols-3',
+    4: 'grid-cols-2 sm:grid-cols-4',
+  }[desktopCols] ?? 'grid-cols-2';
 
   const { data: products = [] } = useQuery({
     queryKey: ['products', slug],
@@ -133,11 +141,9 @@ export default function CatalogPage() {
                   </span>
                 </div>
 
-                {/* Grid dinámico según columns */}
-                <div className="grid gap-3"
-                  style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
+                <div className={`grid gap-3 ${gridClass}`}>
                   {section.items.map(product => (
-                    <ProductCard key={product.id} product={product} columns={columns} />
+                    <ProductCard key={product.id} product={product} columns={desktopCols} />
                   ))}
                 </div>
               </div>

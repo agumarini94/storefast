@@ -13,10 +13,11 @@ async function fetchStore(slug) {
 export function TenantProvider({ children }) {
   const { slug } = useParams();
 
-  const { data: store, isLoading } = useQuery({
+  const { data: store, isLoading, isError } = useQuery({
     queryKey: ['store', slug],
     queryFn: () => fetchStore(slug),
     enabled: !!slug,
+    retry: 1,
   });
 
   useEffect(() => {
@@ -27,7 +28,29 @@ export function TenantProvider({ children }) {
     if (store.theme.font)            root.style.setProperty('--font-main',        store.theme.font);
   }, [store?.theme]);
 
-  if (isLoading) return <div className="flex items-center justify-center h-screen">Cargando...</div>;
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center text-gray-400">
+          <div className="text-4xl animate-pulse mb-3">🛍️</div>
+          <p className="text-sm">Cargando tienda...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !store) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center text-gray-400 px-6">
+          <div className="text-5xl mb-4">🔍</div>
+          <h2 className="text-lg font-bold text-gray-700 mb-1">Tienda no encontrada</h2>
+          <p className="text-sm">No existe ninguna tienda con el slug <code className="bg-gray-100 px-1 rounded text-gray-600">"{slug}"</code></p>
+          <p className="text-xs mt-3 text-gray-400">Verificá que la URL sea correcta.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <TenantContext.Provider value={store}>
