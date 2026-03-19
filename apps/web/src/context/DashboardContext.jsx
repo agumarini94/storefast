@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { authClient } from '../utils/apiClient';
 import { useAuth } from './AuthContext';
 
-const DashboardContext = createContext(null);
+export const DashboardContext = createContext(null);
 
 function authApi() {
   return authClient();
@@ -17,7 +17,7 @@ export function DashboardProvider({ children }) {
     () => localStorage.getItem('activeStoreId')
   );
 
-  const { data: stores = [], isLoading } = useQuery({
+  const { data: stores = [], isLoading, refetch: refetchStores } = useQuery({
     queryKey: ['my-stores', token],
     queryFn: async () => {
       const { data } = await authApi().get('/stores');
@@ -34,7 +34,7 @@ export function DashboardProvider({ children }) {
   }, []);
 
   return (
-    <DashboardContext.Provider value={{ stores, activeStore, setActiveStore, isLoading, authApi }}>
+    <DashboardContext.Provider value={{ stores, activeStore, setActiveStore, isLoading, authApi, refetchStores }}>
       {children}
     </DashboardContext.Provider>
   );

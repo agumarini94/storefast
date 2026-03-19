@@ -57,6 +57,33 @@ export async function initDatabase() {
 
       ALTER TABLE products ADD COLUMN IF NOT EXISTS images       JSONB DEFAULT '[]';
       ALTER TABLE products ADD COLUMN IF NOT EXISTS custom_styles JSONB DEFAULT '{}';
+
+      CREATE TABLE IF NOT EXISTS analytics_events (
+        id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        store_id   UUID REFERENCES stores(id) ON DELETE CASCADE NOT NULL,
+        product_id UUID REFERENCES products(id) ON DELETE SET NULL,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_analytics_store_created ON analytics_events(store_id, created_at);
+
+      ALTER TABLE stores ADD COLUMN IF NOT EXISTS about JSONB DEFAULT '{}';
+
+      CREATE TABLE IF NOT EXISTS password_reset_tokens (
+        id         UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id    UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL,
+        token      VARCHAR(128) UNIQUE NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        used       BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS stock    INTEGER;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS variants JSONB DEFAULT '[]';
+
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name  VARCHAR(100);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS phone      VARCHAR(30);
     `);
     console.log('✅ Database initialized');
   } finally {

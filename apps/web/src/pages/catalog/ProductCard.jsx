@@ -2,6 +2,9 @@ import { useState, useMemo } from 'react';
 import { buildWhatsAppLink } from '../../utils/whatsapp';
 import { useTenant } from '../../context/TenantContext';
 import { t } from '../../i18n/translations';
+import Lightbox from '../../components/Lightbox';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 const TITLE_FONT_SIZE = { xs: '10px', sm: '11px', base: '13px', lg: '15px', xl: '17px' };
 
@@ -17,8 +20,9 @@ const TITLE_ALIGN = { left: 'text-left', center: 'text-center', right: 'text-rig
 
 export default function ProductCard({ product, columns = 2 }) {
   const store   = useTenant();
-  const [imgIdx,   setImgIdx]   = useState(0);
-  const [expanded, setExpanded] = useState(false);
+  const [imgIdx,        setImgIdx]        = useState(0);
+  const [lightbox,      setLightbox]      = useState(false);
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
   const theme   = store?.theme   || {};
   const lang    = theme.language || 'es';
@@ -35,12 +39,28 @@ export default function ProductCard({ product, columns = 2 }) {
   const prevImg = (e) => { e.stopPropagation(); setImgIdx(i => (i - 1 + images.length) % images.length); };
   const nextImg = (e) => { e.stopPropagation(); setImgIdx(i => (i + 1) % images.length); };
 
+  const trackConsult = () => {
+    fetch(`${API_BASE}/api/stores/${store?.slug}/analytics`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: product.id }),
+    }).catch(() => {});
+  };
+
+  const variants = Array.isArray(product.variants) ? product.variants.filter(Boolean) : [];
+
   const waLink = buildWhatsAppLink({
     phone:       store?.contact?.whatsapp,
     storeName:   store?.name,
     productName: product.name,
     price:       cs.is_sale && cs.sale_price ? cs.sale_price : product.price,
+    variant:     selectedVariant,
   });
+
+  // stock=null → no numeric stock info; stock=0 → agotado; stock<3 → últimas unidades
+  const stockNum          = product.stock != null ? Number(product.stock) : null;
+  const effectiveOutStock = !product.in_stock || stockNum === 0;
+  const lowStock          = stockNum !== null && stockNum > 0 && stockNum < 3;
 
   const animClass     = ANIMATION_CLASSES[cs.animation || 'none'];
   const titleAlignCls = TITLE_ALIGN[cs.title_position || 'left'];
@@ -70,13 +90,15 @@ export default function ProductCard({ product, columns = 2 }) {
   const cardBorder  = cs.is_sale ? `2px solid ${saleColor}` : undefined;
 
   return (
+    <>
     <div
-      className={`bg-white rounded-xl overflow-hidden flex flex-col group border border-gray-100 dark:bg-gray-800 dark:border-gray-700 ${animClass}`}
+      className={`bg-white rounded-xl overflow-hidden flex flex-col h-full group border border-gray-100 dark:bg-gray-800 dark:border-gray-700 ${animClass}`}
       style={cardBorder ? { border: cardBorder } : {}}>
 
       {/* ── Imagen / Carrusel ── */}
-      <div className="relative w-full overflow-hidden bg-gray-50 dark:bg-gray-700"
-        style={{ aspectRatio: '1 / 1' }}>
+      <div className="relative w-full overflow-hidden bg-gray-50 dark:bg-gray-700 cursor-zoom-in"
+        style={{ aspectRatio: '1 / 1' }}
+        onClick={() => images.length > 0 && setLightbox(true)}>
         {images.length > 0 ? (
           <img src={images[imgIdx]} alt={product.name} className="w-full h-full object-cover" />
         ) : (
@@ -115,7 +137,16 @@ export default function ProductCard({ product, columns = 2 }) {
           </>
         )}
 
-        {!product.in_stock && (
+        {/* Low-stock badge */}
+        {lowStock && (
+          <div className="absolute bottom-2 left-0 right-0 flex justify-center z-10">
+            <span className="bg-amber-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full shadow-md animate-pulse">
+              ⚡ ¡Últimas {stockNum}!
+            </span>
+          </div>
+        )}
+
+        {effectiveOutStock && (
           <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
             <span className="bg-white text-gray-700 text-xs font-bold px-3 py-1 rounded-full shadow">
               {t(lang, 'outOfStock')}
@@ -150,18 +181,29 @@ export default function ProductCard({ product, columns = 2 }) {
           </div>
         )}
 
-        {!compact && product.description && (
-          <div>
-            <p className={`text-gray-500 dark:text-gray-400 text-xs leading-relaxed ${expanded ? '' : 'line-clamp-2'}`}>
-              {product.description}
-            </p>
-            {product.description.length > 70 && (
-              <button onClick={() => setExpanded(e => !e)}
-                className="text-xs font-medium mt-0.5"
-                style={{ color: theme.primary_color || '#3B82F6' }}>
-                {expanded ? t(lang, 'seeLess') : t(lang, 'seeMore')}
+        {!compact && (
+          <p className="text-gray-500 dark:text-gray-400 text-xs leading-relaxed line-clamp-2 min-h-[2.5rem]">
+            {product.description || ''}
+          </p>
+        )}
+
+        {/* ── Variantes (talles / colores) ── */}
+        {variants.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {variants.map(v => (
+              <button
+                key={v}
+                onClick={() => setSelectedVariant(prev => prev === v ? null : v)}
+                className={`text-xs px-2 py-0.5 rounded-md border font-medium transition-colors ${
+                  selectedVariant === v
+                    ? 'text-white border-transparent'
+                    : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 bg-transparent hover:border-current'
+                }`}
+                style={selectedVariant === v ? { backgroundColor: theme.primary_color || '#3B82F6', borderColor: theme.primary_color || '#3B82F6' } : {}}
+              >
+                {v}
               </button>
-            )}
+            ))}
           </div>
         )}
 
@@ -183,8 +225,9 @@ export default function ProductCard({ product, columns = 2 }) {
             )}
           </div>
 
-          {product.in_stock ? (
+          {!effectiveOutStock ? (
             <a href={waLink} target="_blank" rel="noopener noreferrer"
+              onClick={trackConsult}
               className={`shrink-0 font-semibold rounded-lg text-white transition-all active:opacity-75 hover:opacity-90 ${
                 compact ? 'text-xs px-2 py-1' : 'text-xs px-3 py-2'
               }`}
@@ -197,5 +240,10 @@ export default function ProductCard({ product, columns = 2 }) {
         </div>
       </div>
     </div>
+
+    {lightbox && images.length > 0 && (
+      <Lightbox images={images} initialIndex={imgIdx} onClose={() => setLightbox(false)} />
+    )}
+    </>
   );
 }

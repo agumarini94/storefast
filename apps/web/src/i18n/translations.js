@@ -2,6 +2,9 @@ export const translations = {
   es: {
     search:        'Buscar productos...',
     all:           'Todo',
+    about:         'Nosotros',
+    products:      'Productos',
+    contact:       'Contacto',
     consult:       'Consultar',
     outOfStock:    'Agotado',
     noStock:       'Sin stock',
@@ -19,6 +22,9 @@ export const translations = {
   en: {
     search:        'Search products...',
     all:           'All',
+    about:         'About Us',
+    products:      'Products',
+    contact:       'Contact',
     consult:       'Inquire',
     outOfStock:    'Sold out',
     noStock:       'Out of stock',
@@ -36,6 +42,9 @@ export const translations = {
   he: {
     search:        '...חיפוש מוצרים',
     all:           'הכל',
+    about:         'אודותינו',
+    products:      'מוצרים',
+    contact:       'צור קשר',
     consult:       'פנייה',
     outOfStock:    'אזל',
     noStock:       'אזל המלאי',
@@ -53,6 +62,9 @@ export const translations = {
   ru: {
     search:        'Поиск товаров...',
     all:           'Все',
+    about:         'О нас',
+    products:      'Товары',
+    contact:       'Контакты',
     consult:       'Запросить',
     outOfStock:    'Нет в наличии',
     noStock:       'Нет в наличии',

@@ -1,15 +1,29 @@
+import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useDashboard } from '../../context/DashboardContext';
 import ProductsManager from './ProductsManager';
 import ThemeEditor from './ThemeEditor';
 import ContactEditor from './ContactEditor';
+import AnalyticsPage from './AnalyticsPage';
+import AboutEditor from './AboutEditor';
+import ProfilePage from './ProfilePage';
 
 export default function DashboardLayout() {
   const { logout } = useAuth();
   const { activeStore, isLoading } = useDashboard();
   const navigate  = useNavigate();
   const location  = useLocation();
+
+  const [isDark, setIsDark] = useState(() => {
+    try { return localStorage.getItem('sf_admin_dark') === 'true'; } catch { return false; }
+  });
+
+  useEffect(() => {
+    isDark ? document.body.classList.add('dark') : document.body.classList.remove('dark');
+    try { localStorage.setItem('sf_admin_dark', String(isDark)); } catch {}
+    return () => document.body.classList.remove('dark');
+  }, [isDark]);
 
   const isThemeRoute = location.pathname.includes('/theme');
 
@@ -54,9 +68,36 @@ export default function DashboardLayout() {
               }>
               Contacto
             </NavLink>
+            <NavLink to="/dashboard/about"
+              className={({ isActive }) =>
+                `text-sm font-semibold pb-1 border-b-2 transition-colors ${isActive ? 'border-primary text-primary' : 'border-transparent text-gray-500'}`
+              }>
+              Nosotros
+            </NavLink>
+            <NavLink to="/dashboard/stats"
+              className={({ isActive }) =>
+                `text-sm font-semibold pb-1 border-b-2 transition-colors ${isActive ? 'border-primary text-primary' : 'border-transparent text-gray-500'}`
+              }>
+              📊 Stats
+            </NavLink>
+            <NavLink to="/dashboard/profile"
+              className={({ isActive }) =>
+                `text-sm font-semibold pb-1 border-b-2 transition-colors ${isActive ? 'border-primary text-primary' : 'border-transparent text-gray-500'}`
+              }>
+              👤 Perfil
+            </NavLink>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Dark mode toggle */}
+            <button
+              onClick={() => setIsDark(d => !d)}
+              title={isDark ? 'Modo claro' : 'Modo oscuro'}
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors text-base"
+            >
+              {isDark ? '🌙' : '☀️'}
+            </button>
+
             <a href={`/tienda/${activeStore.slug}`} target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-1 text-xs text-primary bg-primary/10 px-2 py-1.5 rounded-lg hover:bg-primary/20 transition-colors font-medium">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -83,6 +124,9 @@ export default function DashboardLayout() {
           <Route path="products" element={<ProductsManager />} />
           <Route path="theme"    element={<ThemeEditor />} />
           <Route path="contact"  element={<ContactEditor />} />
+          <Route path="about"    element={<AboutEditor />} />
+          <Route path="stats"    element={<AnalyticsPage />} />
+          <Route path="profile"  element={<ProfilePage />} />
           <Route path="*"        element={<Navigate to="products" replace />} />
         </Routes>
       </main>

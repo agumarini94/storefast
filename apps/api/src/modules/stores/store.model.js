@@ -43,3 +43,21 @@ export async function updateContact(storeId, contact) {
   );
   return rows[0];
 }
+
+export async function updateAbout(storeId, about) {
+  const { rows } = await pool.query(
+    `UPDATE stores SET about = $1, updated_at = NOW()
+     WHERE id = $2 RETURNING *`,
+    [JSON.stringify(about), storeId]
+  );
+  return rows[0];
+}
+
+export async function updateInfo(storeId, { name, slug }) {
+  const { rows } = await pool.query(
+    `UPDATE stores SET name = $1, slug = $2, updated_at = NOW()
+     WHERE id = $3 RETURNING *`,
+    [name, slug, storeId]
+  );
+  return rows[0];
+}

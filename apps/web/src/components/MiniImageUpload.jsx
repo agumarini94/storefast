@@ -10,6 +10,8 @@ import { apiClient } from '../utils/apiClient';
  */
 export default function MiniImageUpload({ value, onChange, slot = 1 }) {
   const [uploading, setUploading] = useState(false);
+  const [showUrl,   setShowUrl]   = useState(false);
+  const [urlDraft,  setUrlDraft]  = useState('');
   const cameraRef  = useRef(null);
   const galleryRef = useRef(null);
 
@@ -27,9 +29,23 @@ export default function MiniImageUpload({ value, onChange, slot = 1 }) {
         },
       });
       onChange(data.url);
+      setShowUrl(false);
     } finally {
       setUploading(false);
     }
+  };
+
+  const handleUrlChange = (raw) => {
+    setUrlDraft(raw);
+    const v = raw.trim();
+    if (v.startsWith('http')) onChange(v);
+  };
+
+  const commitUrl = () => {
+    const v = urlDraft.trim();
+    if (v) onChange(v);
+    setShowUrl(false);
+    setUrlDraft('');
   };
 
   return (
@@ -46,7 +62,7 @@ export default function MiniImageUpload({ value, onChange, slot = 1 }) {
             <img src={value} alt="" className="w-full h-full object-cover" />
             <button
               type="button"
-              onClick={() => onChange('')}
+              onClick={() => { onChange(''); setShowUrl(false); setUrlDraft(''); }}
               className="absolute top-1 right-1 w-5 h-5 bg-black/50 rounded-full text-white text-xs flex items-center justify-center leading-none"
             >✕</button>
           </>
@@ -58,18 +74,52 @@ export default function MiniImageUpload({ value, onChange, slot = 1 }) {
         )}
       </div>
 
-      {/* Buttons */}
+      {/* Buttons: Camera / Gallery / URL */}
       {!uploading && (
-        <div className="flex gap-1">
-          <button type="button" onClick={() => cameraRef.current?.click()}
-            className="flex-1 text-xs py-1 border border-gray-200 rounded-lg text-gray-600 bg-white active:bg-gray-50">
-            📷
-          </button>
-          <button type="button" onClick={() => galleryRef.current?.click()}
-            className="flex-1 text-xs py-1 border border-gray-200 rounded-lg text-gray-600 bg-white active:bg-gray-50">
-            🖼️
-          </button>
-        </div>
+        <>
+          <div className="flex gap-1">
+            <button type="button"
+              onClick={() => { setShowUrl(false); cameraRef.current?.click(); }}
+              className="flex-1 text-xs py-1 border border-gray-200 rounded-lg text-gray-600 bg-white active:bg-gray-50">
+              📷
+            </button>
+            <button type="button"
+              onClick={() => { setShowUrl(false); galleryRef.current?.click(); }}
+              className="flex-1 text-xs py-1 border border-gray-200 rounded-lg text-gray-600 bg-white active:bg-gray-50">
+              🖼️
+            </button>
+            <button type="button"
+              onClick={() => setShowUrl(v => !v)}
+              className={`flex-1 text-xs py-1 border rounded-lg transition-colors ${
+                showUrl
+                  ? 'border-primary bg-primary/10 text-primary'
+                  : 'border-gray-200 text-gray-600 bg-white active:bg-gray-50'
+              }`}>
+              🔗
+            </button>
+          </div>
+
+          {showUrl && (
+            <div className="flex gap-1">
+              <input
+                type="url"
+                autoFocus
+                placeholder="https://..."
+                value={urlDraft}
+                onChange={e => handleUrlChange(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') { e.preventDefault(); commitUrl(); }
+                  if (e.key === 'Escape') setShowUrl(false);
+                }}
+                className="flex-1 min-w-0 border border-gray-200 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <button type="button" onClick={commitUrl}
+                className="shrink-0 px-2 py-1 bg-primary text-white rounded-lg text-xs font-semibold">
+                OK
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       <input ref={cameraRef}  type="file" accept="image/*" capture="environment" className="hidden"

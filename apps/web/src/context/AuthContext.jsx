@@ -24,8 +24,8 @@ export function AuthProvider({ children }) {
     return data;
   }, []);
 
-  const register = useCallback(async (email, password) => {
-    const { data } = await apiClient.post('/auth/register', { email, password });
+  const register = useCallback(async ({ email, password, firstName, lastName, phone, storeName }) => {
+    const { data } = await apiClient.post('/auth/register', { email, password, firstName, lastName, phone, storeName });
     persist(data.user, data.token);
     return data;
   }, []);
@@ -38,8 +38,34 @@ export function AuthProvider({ children }) {
     setToken(null);
   }, []);
 
+  const requestPasswordReset = useCallback(async (email) => {
+    await apiClient.post('/auth/forgot-password', { email });
+  }, []);
+
+  const resetPassword = useCallback(async (resetToken, newPassword) => {
+    await apiClient.post('/auth/reset-password', { token: resetToken, newPassword });
+  }, []);
+
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    const jwt = localStorage.getItem('token');
+    await apiClient.post('/auth/change-password', { currentPassword, newPassword }, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+  }, []);
+
+  const updateProfile = useCallback(async ({ firstName, lastName, phone }) => {
+    const jwt = localStorage.getItem('token');
+    const { data } = await apiClient.patch('/auth/profile', { firstName, lastName, phone }, {
+      headers: { Authorization: `Bearer ${jwt}` },
+    });
+    const updated = { ...parseStored('user'), ...data };
+    localStorage.setItem('user', JSON.stringify(updated));
+    setUser(updated);
+    return data;
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isAuthenticated: !!token, login, register, logout, requestPasswordReset, resetPassword, changePassword, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

@@ -45,3 +45,25 @@ export async function updateContact(req, res, next) {
     res.json(store);
   } catch (err) { next(err); }
 }
+
+export async function updateAbout(req, res, next) {
+  try {
+    const store = await storeService.updateAbout(
+      req.params.storeId,
+      req.user.userId,
+      req.body
+    );
+    res.json(store);
+  } catch (err) { next(err); }
+}
+
+export async function updateInfo(req, res, next) {
+  try {
+    const store = await storeService.updateInfo(
+      req.params.storeId,
+      req.user.userId,
+      req.body
+    );
+    res.json(store);
+  } catch (err) { next(err); }
+}

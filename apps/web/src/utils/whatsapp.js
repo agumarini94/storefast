@@ -1,8 +1,9 @@
 /**
  * Genera un link de WhatsApp con el detalle del producto/pedido.
  */
-export function buildWhatsAppLink({ phone, storeName, productName, price }) {
-  const message = `Hola! Vi *${productName}* en ${storeName} por $${price}. ¿Está disponible?`;
+export function buildWhatsAppLink({ phone, storeName, productName, price, variant }) {
+  const variantPart = variant ? ` — *${variant}*` : '';
+  const message = `Hola! Vi *${productName}*${variantPart} en ${storeName} por ₪${price}. ¿Está disponible?`;
   const encoded = encodeURIComponent(message);
   return `https://wa.me/${phone}?text=${encoded}`;
 }

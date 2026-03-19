@@ -8,6 +8,35 @@
   --font-main: 'Inter', sans-serif;
 }
 
+/* ── Light / Dark theme tokens ── */
 body {
   font-family: var(--font-main);
+  --bg-color:     #f9fafb;
+  --text-color:   #1a1a1a;
+  --card-bg:      #ffffff;
+  --border-color: #e5e7eb;
 }
+
+body.dark {
+  --bg-color:     #121212;
+  --text-color:   #f9f9f9;
+  --card-bg:      #1e1e1e;
+  --border-color: #374151;
+}
+
+/* Hide scrollbars on carousel rows (visible on Webkit) */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Marquee / announcement bar */
+@keyframes marquee-ltr {
+  from { transform: translateX(100vw); }
+  to   { transform: translateX(-100%); }
+}
+@keyframes marquee-rtl {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100vw); }
+}
+.animate-marquee     { animation: marquee-ltr var(--marquee-dur, 25s) linear infinite; }
+.animate-marquee-rtl { animation: marquee-rtl var(--marquee-dur, 25s) linear infinite; }
+.marquee-track:hover .animate-marquee,
+.marquee-track:hover .animate-marquee-rtl { animation-play-state: paused; }
